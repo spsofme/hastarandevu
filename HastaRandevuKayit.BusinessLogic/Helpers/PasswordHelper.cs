@@ -13,7 +13,7 @@ namespace HastaRandevuKayit.BusinessLogic.Helpers
         public static string CreateRandomPassword()
         {
             // Create a random password
-            return Guid.NewGuid().ToString().Substring(0, 8);
+            return Guid.NewGuid().ToString()[..8];
         }
     }
 }

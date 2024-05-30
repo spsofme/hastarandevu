@@ -9,19 +9,10 @@ namespace HastaRandevuKayit.BusinessLogic.Services
     {
         private DataAccessManager DataAccess = new();
 
-        public UserModel? Login(string tc, string password)
-        {
-            return DataAccess.UserDataManager.Login(tc, password);
-        }
 
         public UserModel? GetUserByTC(string tc)
         {
             return DataAccess.UserDataManager.GetUserByTC(tc);
-        }
-
-        public List<UserModel> GetUserByRole(UserRoleEnum role)
-        {
-            return DataAccess.UserDataManager.GetUserByRole((byte)role);
         }
 
         public void AddPatient(string tc, string name, string surname, string phone, string email, byte gender)
@@ -42,11 +33,11 @@ namespace HastaRandevuKayit.BusinessLogic.Services
 
         public void AddDoctor(string tc, string name, string surname, string phone, string email, byte gender)
         {
-            UserModel? user = DataAccess.UserDataManager.GetUserByTC(tc);
+            DoctorModel? user = DataAccess.DoctorDataManager.GetDoctorByTC(tc);
             if (user != null && user.Password != null)
                 throw new Exception("User already exists!");
 
-            DataAccess.UserDataManager.AddUser(new UserModel()
+            DataAccess.DoctorDataManager.AddDoctor(new DoctorModel()
             {
                 TC = tc,
                 Email = email,
@@ -54,18 +45,19 @@ namespace HastaRandevuKayit.BusinessLogic.Services
                 Surname = surname,
                 Phone = phone,
                 Gender = gender,
-                Password = PasswordHelper.EncryptPassword(PasswordHelper.CreateRandomPassword()),
-                Role = (byte)UserRoleEnum.Doctor
+                Password = PasswordHelper.EncryptPassword(tc),
+                Title = "Dr.",
+                DepartmentId = 1
             });
         }
 
         public bool AddSecretary(string tc, string name, string surname, string phone, string email, byte gender)
         {
-            UserModel? user = DataAccess.UserDataManager.GetUserByTC(tc);
+            DoctorModel? user = DataAccess.DoctorDataManager.GetDoctorByTC(tc);
             if (user != null && user.Password != null)
                 return false;
 
-            DataAccess.UserDataManager.AddUser(new UserModel()
+            return DataAccess.UserDataManager.AddUser(new DoctorModel()
             {
                 TC = tc,
                 Email = email,
@@ -73,46 +65,15 @@ namespace HastaRandevuKayit.BusinessLogic.Services
                 Surname = surname,
                 Phone = phone,
                 Gender = gender,
-                Password = PasswordHelper.EncryptPassword(PasswordHelper.CreateRandomPassword()),
-                Role = (byte)UserRoleEnum.Secretary
+                Password = PasswordHelper.EncryptPassword(tc),
+                Title = "Dr.",
+                DepartmentId = 1
             });
-            return true;
-        }
-
-        public void MakeDoctor(int id)
-        {
-            UserModel? user = DataAccess.UserDataManager.GetUserById(id);
-            if (user == null)
-                throw new Exception("User not found!");
-            if (user.Password != null)
-                throw new Exception("User is already a doctor!");
-
-            user.Password = PasswordHelper.EncryptPassword(PasswordHelper.CreateRandomPassword());
-            user.Role = (byte)UserRoleEnum.Doctor;
-            DataAccess.UserDataManager.UpdateUser(user);
-        }
-
-        public void MakeSecretary(int id)
-        {
-            UserModel? user = DataAccess.UserDataManager.GetUserById(id);
-            if (user == null)
-                throw new Exception("User not found!");
-            if (user.Password != null)
-                throw new Exception("User is already a secretary!");
-
-            user.Password = PasswordHelper.EncryptPassword(PasswordHelper.CreateRandomPassword());
-            user.Role = (byte)UserRoleEnum.Secretary;
-            DataAccess.UserDataManager.UpdateUser(user);
         }
 
         public bool UpdateUser(UserModel user)
         {
             return DataAccess.UserDataManager.UpdateUser(user);
-        }
-
-        public bool RemoveUserById(int id)
-        {
-            return DataAccess.UserDataManager.RemoveUserById(id);
         }
 
         public bool RemoveUserByTc(string tc)

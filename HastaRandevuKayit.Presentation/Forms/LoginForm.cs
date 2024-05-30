@@ -29,22 +29,12 @@ namespace HastaRandevuKayit.Presentation.Forms
                 return;
 
             // Login işlemi
-            var user = BusinessLogicManager.UserServices.Login(tc, password);
-            if (user != null)
+            var secretary = BusinessLogicManager.SecretaryServices.LoginSecretary(tc, password);
+            if (secretary != null)
             {
-                SessionService.LoginUser = user;
                 this.Hide();
-                switch (user.Role)
-                {
-                    case 1:  // Doctor
-                        var doctorForm = new DoctorForm();
-                        doctorForm.ShowDialog();
-                        break;
-                    case 2:  // Secretary
-                        var secretaryForm = new SecretaryForm();
-                        secretaryForm.ShowDialog();
-                        break;
-                }
+                var secretaryForm = new SecretaryForm();
+                secretaryForm.ShowDialog();
                 this.Close();
             }
             else

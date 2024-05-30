@@ -1,5 +1,7 @@
 ﻿using HastaRandevuKayit.DataAccess.Enums;
 using HastaRandevuKayit.DataAccess.Models;
+using HastaRandevuKayit.DataAccess.Utils;
+using System.Data.OleDb;
 
 namespace HastaRandevuKayit.DataAccess.Repositories
 {
@@ -9,33 +11,29 @@ namespace HastaRandevuKayit.DataAccess.Repositories
         [
             new()
             {
-                Id = 1,
                 TC = "10390852288",
                 Name = "Kerim",
                 Surname = "ER",
                 Phone = "+905320638626",
                 Email = "kerimer@hotmail.com",
-                Gender = 0,
-                Password = "123456",
-                Role = (byte)UserRoleEnum.Secretary
+                Gender = (byte)GenderEnum.Male,
             }
         ];
 
         public bool AddUser(UserModel user)
         {
-            if (Users.Exists(x => x.TC == user.TC))
-                return false;
-            if (Users.Count == 0)
-                user.Id = 1;
-            else
-                user.Id = Users[^1].Id + 1;
-            Users.Add(user);
-            return true;
-        }
-
-        public UserModel? GetUserById(int id)
-        {
-            return Users.FirstOrDefault(x => x.Id == id);
+            return DBUtil.DatabaseQuery(() =>
+            {
+                using OleDbCommand command = new("INSERT INTO Sekreter (TC, Ad, Soyad, Email, Telefon, Cinsiyet, Sifre) VALUES (?, ?, ?, ?, ?, ?, ?)", DBUtil.connection);
+                command.Parameters.AddWithValue("@TC", user.TC);
+                command.Parameters.AddWithValue("@Ad", user.Name);
+                command.Parameters.AddWithValue("@Soyad", user.Surname);
+                command.Parameters.AddWithValue("@Email", user.Email);
+                command.Parameters.AddWithValue("@Telefon", user.Phone);
+                command.Parameters.AddWithValue("@Cinsiyet", user.Gender);
+                command.Parameters.AddWithValue("@Sifre", user.TC);
+                command.ExecuteNonQuery();
+            });
         }
 
         public UserModel? GetUserByTC(string tc)
@@ -46,11 +44,6 @@ namespace HastaRandevuKayit.DataAccess.Repositories
         public List<UserModel> GetUsersByDepartmentId(int departmentId)
         {
             return [];
-        }
-
-        public List<UserModel> GetUserByRole(byte role)
-        {
-            return Users.FindAll(x => x.Role == role);
         }
 
         public bool UpdateUser(UserModel user)
@@ -64,16 +57,6 @@ namespace HastaRandevuKayit.DataAccess.Repositories
         public List<UserModel> GetAllUsers()
         {
             return Users;
-        }
-
-        public UserModel? Login(string tc, string password)
-        {
-            return Users.FirstOrDefault(x => x.TC == tc && x.Password == password, null);
-        }
-
-        public bool RemoveUserById(int id)
-        {
-            return Users.RemoveAll(x => x.Id == id) > 0;
         }
 
         public bool RemoveUserByTc(string tc)

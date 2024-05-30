@@ -9,6 +9,7 @@ namespace HastaRandevuKayit.BusinessLogic.Services
 {
     public static class SessionService
     {
-        public static UserModel LoginUser { get; set; }
+        public static SecretaryModel LoginSecretaryUser { get; set; }
+        public static DoctorModel LoginDoctorUser { get; set; }
     }
 }

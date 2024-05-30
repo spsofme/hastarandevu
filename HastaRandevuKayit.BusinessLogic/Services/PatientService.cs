@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HastaRandevuKayit.DataAccess.Enums
+namespace HastaRandevuKayit.BusinessLogic.Services
 {
-    public enum GenderEnum: byte
+    internal class PatientService
     {
-        Female,
-        Male
     }
 }

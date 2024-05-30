@@ -1,43 +1,50 @@
 ﻿using HastaRandevuKayit.DataAccess.Models;
+using HastaRandevuKayit.DataAccess.Utils;
+using System.Data.OleDb;
 
 namespace HastaRandevuKayit.DataAccess.Repositories
 {
     public class DepartmentRepository
     {
-        private static List<DepartmentModel> Departments = [];
-
-        public void AddDepartment(DepartmentModel department)
-        {
-            if (Departments.Count == 0)
-                department.Id = 1;
-            else
-                department.Id = Departments[^1].Id + 1;
-            Departments.Add(department);
-        }
-
         public DepartmentModel? GetDepartmentById(int id)
         {
-            return Departments.FirstOrDefault(x => x.Id == id);
+            DepartmentModel? result = null;
+
+            DBUtil.DatabaseQuery(() =>
+            {
+                using OleDbCommand command = new("SELECT * FROM Departman WHERE Id = ?", DBUtil.connection);
+                command.Parameters.AddWithValue("@Id", id);
+                using OleDbDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    result = new DepartmentModel
+                    {
+                        Id = int.Parse(reader["Id"].ToString()),
+                        Name = reader["Ad"].ToString()
+                    };
+                }
+            });
+
+            return result;
         }
 
         public List<DepartmentModel> GetAllDepartments()
         {
-            return Departments;
-        }
-
-        public void AddUser(int departmentId, int id)
-        {
-            DataAccessManager dataAccessManager = new();
-
-            var user = dataAccessManager.UserDataManager.GetUserById(id);
-            if (user == null)
-                throw new Exception("User not found!");
-
-            var department = GetDepartmentById(departmentId);
-            if (department == null)
-                throw new Exception("Department not found!");
-
-            // Ekleme işlemi
+            List<DepartmentModel> result = [];
+            DBUtil.DatabaseQuery(() =>
+            {
+                using OleDbCommand command = new("SELECT * FROM Departman", DBUtil.connection);
+                using OleDbDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    result.Add(new DepartmentModel
+                    {
+                        Id = int.Parse(reader["Id"].ToString()),
+                        Name = reader["Ad"].ToString()
+                    });
+                }
+            });
+            return result;
         }
     }
 }

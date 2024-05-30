@@ -6,5 +6,7 @@ namespace HastaRandevuKayit.DataAccess
     {
         public UserRepository UserDataManager = new();
         public DepartmentRepository DepartmentDataManager = new();
+        public DoctorRepository DoctorDataManager = new();
+        public SecretaryRepository SecretaryDataManager = new();
     }
 }

@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HastaRandevuKayit.DataAccess.Enums
+namespace HastaRandevuKayit.DataAccess.Models
 {
-    public enum GenderEnum: byte
+    public class SecretaryModel : UserModel
     {
-        Female,
-        Male
+        public string? Password { get; set; }
     }
 }

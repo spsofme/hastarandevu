@@ -1,9 +1,8 @@
 ﻿using HastaRandevuKayit.BusinessLogic;
+using HastaRandevuKayit.BusinessLogic.Helpers;
 using HastaRandevuKayit.BusinessLogic.Services;
-using HastaRandevuKayit.DataAccess.Enums;
 using HastaRandevuKayit.DataAccess.Models;
 using HastaRandevuKayit.Presentation.Helpers;
-using System.Text.RegularExpressions;
 
 namespace HastaRandevuKayit.Presentation.Forms
 {
@@ -25,9 +24,9 @@ namespace HastaRandevuKayit.Presentation.Forms
             lvSecretaries.View = View.Details;
             lvSecretaries.FullRowSelect = true;
 
-            foreach (var user in BusinessLogicManager.UserServices.GetUserByRole(UserRoleEnum.Secretary))
+            foreach (var user in BusinessLogicManager.SecretaryServices.GetAllSecretaries())
             {
-                if (SessionService.LoginUser.TC == user.TC) continue;
+                if (SessionService.LoginSecretaryUser.TC == user.TC) continue;
                 lvSecretaries.Items.Add(new ListViewItem(new string[] { user.TC, user.Name, user.Surname, $"{user.Phone.Substring(0, 3)} {user.Phone.Substring(3, 3)} {user.Phone.Substring(6, 3)} {user.Phone.Substring(9)}", user.Email, user.Gender == 0 ? "Kız" : "Erkek" }));
             }
 
@@ -44,7 +43,7 @@ namespace HastaRandevuKayit.Presentation.Forms
                 ListViewItem selectedItem = listView.SelectedItems[0];
                 string TC = selectedItem.SubItems[0].Text;
 
-                UserModel user = BusinessLogicManager.UserServices.GetUserByTC(TC)!;
+                SecretaryModel user = BusinessLogicManager.SecretaryServices.GetSecretaryByTC(TC)!;
 
                 //string phone = $"({user.Phone.Substring(3,3)}) {user.Phone.Substring(6, 3)}-{user.Phone.Substring(9)}";
                 string phone = $"{user.Phone.Replace(" ", "").Substring(3)}";
@@ -60,7 +59,7 @@ namespace HastaRandevuKayit.Presentation.Forms
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            BusinessLogicManager.UserServices.RemoveUserByTc(txtUpdTc.Text.Trim());
+            BusinessLogicManager.SecretaryServices.RemoveSecretary(txtUpdTc.Text.Trim());
 
             txtUpdTc.Clear();
             txtUpdName.Clear();
@@ -80,9 +79,7 @@ namespace HastaRandevuKayit.Presentation.Forms
                 return;
             }
 
-            string phone = "+90" + txtAddPhone.Text.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
-
-            if (BusinessLogicManager.UserServices.AddSecretary(txtAddTC.Text, txtAddName.Text, txtAddSurname.Text, phone, txtAddMail.Text, (byte)cbAddGender.SelectedIndex))
+            if (BusinessLogicManager.SecretaryServices.AddSecretary(txtAddTC.Text, txtAddName.Text, txtAddSurname.Text, txtAddPhone.Text, txtAddMail.Text, (byte)cbAddGender.SelectedIndex))
                 MessageBoxHelper.ShowInfo("Kayıt başarılı!");
             else
                 MessageBoxHelper.ShowWarning("Kayıt başarısız!");
@@ -108,7 +105,7 @@ namespace HastaRandevuKayit.Presentation.Forms
                 txtAddPhone.Text.Trim() == "" ||
                 txtAddPhone.Text.Length != 14 ||
                 txtAddMail.Text.Trim() == "" ||
-                (!Regex.IsMatch(txtAddMail.Text, @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$")) ||
+                (!RegexHelper.EmailControl(txtAddMail.Text)) ||
                 cbAddGender.SelectedIndex == -1
             ) return false;
 
@@ -123,7 +120,7 @@ namespace HastaRandevuKayit.Presentation.Forms
                 txtUpdPhone.Text.Trim() == "" ||
                 txtUpdPhone.Text.Length != 14 ||
                 txtUpdMail.Text.Trim() == "" ||
-                (!Regex.IsMatch(txtUpdMail.Text, @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$"))
+                (!RegexHelper.EmailControl(txtUpdMail.Text))
             ) return false;
 
             return true;
@@ -137,19 +134,7 @@ namespace HastaRandevuKayit.Presentation.Forms
                 return;
             }
 
-            UserModel user = BusinessLogicManager.UserServices.GetUserByTC(txtUpdTc.Text)!;
-            string phone = "+90" + txtUpdPhone.Text.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
-            
-            BusinessLogicManager.UserServices.UpdateUser(new UserModel()
-            {
-                TC = txtUpdTc.Text,
-                Name = txtUpdName.Text,
-                Surname = txtUpdSurname.Text,
-                Phone = phone,
-                Email = txtUpdMail.Text,
-                Gender = user.Gender,
-                Role = user.Role,
-            });
+            BusinessLogicManager.SecretaryServices.UpdateSecretary(txtUpdTc.Text, txtUpdName.Text, txtUpdSurname.Text, txtUpdPhone.Text, txtUpdMail.Text);
 
             txtUpdTc.Clear();
             txtUpdName.Clear();
