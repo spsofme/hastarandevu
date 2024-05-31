@@ -12,6 +12,35 @@ namespace HastaRandevuKayit.DataAccess.Repositories
 {
     public class DoctorRepository
     {
+        public DoctorModel? LoginDoctor(string tc, string password)
+        {
+            DoctorModel? result = null;
+            DBUtil.DatabaseQuery(() =>
+            {
+                using OleDbCommand command = new("SELECT * FROM Doktor WHERE TC = ? AND Sifre = ? AND Pasif = FALSE", DBUtil.connection);
+                command.Parameters.AddWithValue("@TC", tc);
+                command.Parameters.AddWithValue("@Sifre", password);
+                using OleDbDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    result = new DoctorModel
+                    {
+                        TC = reader["TC"].ToString(),
+                        Name = reader["Ad"].ToString(),
+                        Surname = reader["Soyad"].ToString(),
+                        Email = reader["Email"].ToString(),
+                        Phone = reader["Telefon"].ToString(),
+                        Password = reader["Sifre"].ToString(),
+                        Gender = (byte)int.Parse(reader["Cinsiyet"].ToString()),
+                        Title = reader["Unvan"].ToString(),
+                        DepartmentId = (int)reader["DepartmanId"]
+                    };
+                }
+            });
+            return result;
+        }
+
+
         public List<DoctorModel> GetAllDoctors()
         {
             List<DoctorModel> result = [];
@@ -30,7 +59,8 @@ namespace HastaRandevuKayit.DataAccess.Repositories
                         Phone = reader["Telefon"].ToString(),
                         Gender = (byte)(reader["Telefon"].ToString() == "Erkek" ? GenderEnum.Male : GenderEnum.Female),
                         DepartmentId = (int) reader["DepartmanId"],
-                        Title = reader["Unvan"].ToString()
+                        Title = reader["Unvan"].ToString(),
+                        Password = reader["Sifre"].ToString()
                     });
                 }
             });
@@ -42,7 +72,7 @@ namespace HastaRandevuKayit.DataAccess.Repositories
             DoctorModel? result = null;
             DBUtil.DatabaseQuery(() =>
             {
-                using OleDbCommand command = new("SELECT * FROM Doktor WHERE TC = ? WHERE Pasif = FALSE", DBUtil.connection);
+                using OleDbCommand command = new("SELECT * FROM Doktor WHERE TC = ? AND Pasif = FALSE", DBUtil.connection);
                 command.Parameters.AddWithValue("@TC", tc);
                 using OleDbDataReader reader = command.ExecuteReader();
                 if (reader.Read())
@@ -56,8 +86,36 @@ namespace HastaRandevuKayit.DataAccess.Repositories
                         Phone = reader["Telefon"].ToString(),
                         Gender = (byte)(reader["Cinsiyet"].ToString() == "Erkek" ? GenderEnum.Male : GenderEnum.Female),
                         DepartmentId = (int) reader["DepartmanId"],
-                        Title = reader["Unvan"].ToString()
+                        Title = reader["Unvan"].ToString(),
+                        Password = reader["Sifre"].ToString()
                     };
+                }
+            });
+            return result;
+        }
+
+        public List<DoctorModel> GetDoctorByDepartmentId(int id)
+        {
+            List<DoctorModel> result = [];
+            DBUtil.DatabaseQuery(() =>
+            {
+                using OleDbCommand command = new("SELECT * FROM Doktor WHERE DepartmanId = ? AND Pasif = FALSE", DBUtil.connection);
+                command.Parameters.AddWithValue("@DepartmanId", id);
+                using OleDbDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    result.Add(new DoctorModel
+                    {
+                        TC = reader["TC"].ToString(),
+                        Name = reader["Ad"].ToString(),
+                        Surname = reader["Soyad"].ToString(),
+                        Email = reader["Email"].ToString(),
+                        Phone = reader["Telefon"].ToString(),
+                        Gender = (byte)(reader["Cinsiyet"].ToString() == "Erkek" ? GenderEnum.Male : GenderEnum.Female),
+                        DepartmentId = (int)reader["DepartmanId"],
+                        Title = reader["Unvan"].ToString(),
+                        Password = reader["Sifre"].ToString()
+                    });
                 }
             });
             return result;
@@ -68,7 +126,7 @@ namespace HastaRandevuKayit.DataAccess.Repositories
             int result = 0;
             DBUtil.DatabaseQuery(() =>
             {
-                using OleDbCommand command = new("INSERT INTO Doktor (TC, Ad, Soyad, Email, Telefon, Cinsiyet, Sifre, DepartmanId, Unvan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", DBUtil.connection);
+                using OleDbCommand command = new("INSERT INTO Doktor (TC, Ad, Soyad, Email, Telefon, Cinsiyet, Sifre, DepartmanId, Unvan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", DBUtil.connection);
                 command.Parameters.AddWithValue("@TC", doctor.TC);
                 command.Parameters.AddWithValue("@Ad", doctor.Name);
                 command.Parameters.AddWithValue("@Soyad", doctor.Surname);
@@ -88,12 +146,12 @@ namespace HastaRandevuKayit.DataAccess.Repositories
             int result = 0;
             DBUtil.DatabaseQuery(() =>
             {
-                using OleDbCommand command = new("UPDATE Sekreter SET Ad = ?, Soyad = ?, Email = ?, Telefon = ?, Cinsiyet = ?, Sifre = ?, DepartmanId = ?, Unvan = ? WHERE TC = ? AND Pasif = FALSE", DBUtil.connection);
+                using OleDbCommand command = new("UPDATE Doktor SET Ad = ?, Soyad = ?, Email = ?, Telefon = ?, Cinsiyet = ?, Sifre = ?, DepartmanId = ?, Unvan = ? WHERE TC = ? AND Pasif = FALSE", DBUtil.connection);
                 command.Parameters.AddWithValue("@Ad", doctor.Name);
                 command.Parameters.AddWithValue("@Soyad", doctor.Surname);
                 command.Parameters.AddWithValue("@Email", doctor.Email);
                 command.Parameters.AddWithValue("@Telefon", doctor.Phone);
-                command.Parameters.AddWithValue("@Cinsiyet", doctor);
+                command.Parameters.AddWithValue("@Cinsiyet", doctor.Gender);
                 command.Parameters.AddWithValue("@Sifre", doctor.Password);
                 command.Parameters.AddWithValue("@DepartmanId", doctor.DepartmentId);
                 command.Parameters.AddWithValue("@Unvan", doctor.Title);
@@ -103,7 +161,7 @@ namespace HastaRandevuKayit.DataAccess.Repositories
             return result > 0;
         }
 
-        public bool DeleteDoctor(string tc)
+        public bool RemoveDoctor(string tc)
         {
             int result = 0;
             DBUtil.DatabaseQuery(() =>

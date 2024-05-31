@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace HastaRandevuKayit.DataAccess.Models
 {
-    class PatientModel : UserModel { }
+    public class PatientModel : UserModel { }
 }

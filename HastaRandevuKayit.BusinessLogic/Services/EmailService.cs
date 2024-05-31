@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
+﻿using System.Net.Mail;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HastaRandevuKayit.BusinessLogic.Services
 {
     public class EmailService
     {
-        public bool SendMail(string receiverMail, string body)
+        public bool SendMail(string receiverMail, string body, string? attachmentUrl = null)
         {
             try
             {
@@ -29,6 +24,12 @@ namespace HastaRandevuKayit.BusinessLogic.Services
                 mail.Subject = "Hasta Randevu Sistemi";
                 mail.Body = body;
                 //mail.IsBodyHtml = true; // E-posta içeriğinin HTML olup olmadığını belirtir
+
+                if (attachmentUrl != null)
+                {
+                    Attachment attachment = new Attachment(attachmentUrl);
+                    mail.Attachments.Add(attachment);
+                }
 
                 using SmtpClient smtp = new(smtpAddress, portNumber);
                 smtp.Credentials = new NetworkCredential(emailFrom, password);

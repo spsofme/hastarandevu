@@ -36,6 +36,16 @@ namespace HastaRandevuKayit.Presentation.Forms
                 var secretaryForm = new SecretaryForm();
                 secretaryForm.ShowDialog();
                 this.Close();
+                return;
+            }
+            var doctor = BusinessLogicManager.DoctorServices.LoginDoctor(tc, password);
+            if (doctor != null)
+            {
+                this.Hide();
+                var doctorForm = new DoctorForm();
+                doctorForm.ShowDialog();
+                this.Close();
+                return;
             }
             else
             {
